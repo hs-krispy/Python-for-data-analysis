@@ -73,3 +73,57 @@ np.argpartition(arr, 3)
 ```
 
 - partition은 정렬을 하는 배열의 가장 작은 n개의 원소가 반환 결과의 앞에 오도록 정렬
+
+**searchsorted**
+
+```python
+arr = np.array([0, 1, 7, 12, 15])
+arr.searchsorted(9)
+# 3
+
+arr.searchsorted([0, 8, 11, 16])
+# array([0, 3, 3, 5], dtype=int64)
+
+arr = np.array([0, 0, 0, 1, 1, 1, 1])
+arr.searchsorted([0, 1])
+# array([0, 3], dtype=int64)
+```
+
+- 정렬된 배열에서 이진 탐색을 수행해 새로운 값을 삽입할 때 정렬된 상태를 유지하는 위치를 반환
+  - 동일한 값은 그룹의 왼쪽에서부터 색인을 반환
+
+
+
+#### Numba
+
+- CPU, GPU 또는 기타 하드웨어를 이용해서 NumPy와 유사한 데이터를 다루는 빠른 함수를 제공
+- 파이썬 코드를 기계 코드를 변환하기 위해 LLVM 프로젝트를 사용
+- 모든 파이썬 코드를 컴파일할 수는 없지만 많은 부분을 지원하며 산술 알고리즘을 작성하는 경우 특히 유용
+
+```python
+import numpy as np
+import numba as nb
+
+# @nb.jit
+def mean_distance(x, y):
+    nx = len(x)
+    result = 0.0
+    count = 0
+    for i in range(nx):
+        result += x[i] - y[i]
+        count += 1
+    return result / count
+
+x = np.random.randn(10000000)
+y = np.random.randn(10000000)
+
+%time mean_distance(x, y)
+# Wall time: 5.31 s, 0.00018234538368696598
+
+numba_mean_distance = nb.jit(mean_distance)
+%time numba_mean_distance(x, y)
+# Wall time: 766 ms, 0.00018234538368696598
+```
+
+- 위의 경우에는 거의 6 ~ 7배 만큼 시간을 단축한 것을 볼 수 있음
+- numba.jit 함수를 이용해서 컴파일된 Numba 함수로 바꿀 수 있으며 기존의 함수위에 @nb.jit이라는 decorator를 사용해도 동일한 효과를 얻을 수 있음
